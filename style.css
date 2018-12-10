@@ -1,0 +1,14 @@
+body {
+    box-sizing: border-box;
+    width: 50%;
+    margin: 0 auto;
+    margin-top: 50px;
+}
+
+form {
+    margin: 50px 0px;
+}
+
+#timer-clock {
+    margin: 50px 0px;
+}
