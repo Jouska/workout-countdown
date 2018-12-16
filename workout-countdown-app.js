@@ -6,6 +6,7 @@ const pauseResumeEl = document.querySelector('#pause-resume-button')
 const circuitNameEl = document.querySelector('#circuit-name')
 const circuitSetNumEl = document.querySelector('#sets-number')
 const addCircuitBtnEl  = document.querySelector('#add-circuit')
+const selectCircuitEl = document.querySelector('#select-circuit')
 
 const exerciseFormEl = document.querySelector('#exer-form')
 const exerciseNameEl = document.querySelector('#exercise-name')
@@ -21,11 +22,11 @@ let timer
 let timerStarted = false
 let intervalNew
 let circuitsArr = loadCircuits()
+let activeCircuit = 0
 
-// Need to change initial setup to take into account loading of potential stored circuits
-// (ie, start button and add exercise should be enabled if circuit loaded)
-// Display list of stored circuits in drop down box
-// Switching between list of stored circuits loads necessary object for starting
+// Complete updateCircuitArr (at bottom)
+// Continue updating code to include sets/exercise numbers correctly from circuitSelect dropdown
+// Needs to also allow editing of exercises if a circuit is selected
 
 const Exercise = function (name, type, duration) {
     this.name = name
@@ -40,6 +41,7 @@ const Circuit = function (name, setsNum) {
     this.exerciseArray = []
     this.circuitCycles = 0
     this.exerCycles = 0
+    this.id = uuidv4()
 }
 
 Circuit.prototype.addExercise = function (name, type, duration) {
@@ -92,8 +94,8 @@ Circuit.prototype.startCircuit = function () {
             timer.stop()
             this.exerCycles = 0
             this.circuitCycles = 0
-            exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[0].exerCycles + 1} of ${circuitsArr[0].exerNum + 1}`
-            setNumberEl.textContent = `Set number: ${circuitsArr[0].exerCycles + 1} of ${circuitsArr[0].setsNum}`
+            exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].exerNum + 1}`
+            setNumberEl.textContent = `Set number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].setsNum}`
 
             startStopEl.textContent = 'Start'
             pauseResumeEl.classList.add('disabled')
@@ -105,10 +107,23 @@ Circuit.prototype.startCircuit = function () {
 
 // let circuitOne = new Circuit('circuitOne', 3)
 appReset()
+populateCircuitSelect()
+updateCircuitArr()
 
-function appReset() {
+function appReset () {
     exerciseNumberEl.textContent = `Exercise number: 0 of 0`
     setNumberEl.textContent = `Set number: 0 of 0`
+}
+
+function populateCircuitSelect () {
+    selectCircuitEl.innerHTML = ''
+    circuitsArr.forEach((circuit) => {
+        const circuitOption = document.createElement('option')
+        circuitOption.textContent = circuit.name
+        circuitOption.value = circuit.id
+        selectCircuitEl.appendChild(circuitOption)
+        
+    })
 }
 
 function createCircuit (name, sets) {
@@ -144,7 +159,7 @@ function loadCircuits () {
     }
 }
 
-function startTimer(seconds, container, oncomplete) {
+function startTimer (seconds, container, oncomplete) {
     let startTime, timer, obj, ms = seconds*1000,
         display = document.getElementById(container)
     obj = {}
@@ -180,7 +195,7 @@ function startTimer(seconds, container, oncomplete) {
 }
 
 startStopEl.addEventListener('click', () => {
-    circuitsArr[0].startCircuit()
+    circuitsArr[indexCircuit].startCircuit()
 })
 
 pauseResumeEl.addEventListener('click', () => {
@@ -203,8 +218,8 @@ addExerciseBtnEl.addEventListener('click', (e) => {
     let type = exerciseTypeEl.value
     let duration = parseInt(exerciseDurationEl.value, 10)
 
-    circuitsArr[0].addExercise(name, type, duration)
-    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[0].exerCycles + 1} of ${circuitsArr[0].exerNum + 1}`
+    circuitsArr[indexCircuit].addExercise(name, type, duration)
+    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].exerNum + 1}`
 
     exerciseNameEl.value = ''
     exerciseDurationEl.value = ''
@@ -221,13 +236,30 @@ addCircuitBtnEl.addEventListener('click', (e) => {
     let name = circuitNameEl.value
     let setNum = parseInt(circuitSetNumEl.value, 10)
     createCircuit(name, setNum)
-    setNumberEl.textContent = `Set number: ${circuitsArr[0].exerCycles + 1} of ${setNum}`
+    setNumberEl.textContent = `Set number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${setNum}`
     
     exerciseTitleEl.textContent = `Now add some exercises!`
 
     addCircuitBtnEl.textContent = 'Update Circuit'
 
+    populateCircuitSelect()
+
     if (circuitsArr.length > 0) {
         exerciseFormEl.classList.remove('hidden')
     }
 })
+
+selectCircuitEl.addEventListener('change', (e) => {
+   updateCircuitArr()
+})
+
+function updateCircuitArr () {
+    let indexCircuit = circuitsArr.findIndex((circuit) => {
+        return selectCircuitEl.value === circuit.id
+    })
+    setNumberEl.textContent = `Set number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].setsNum}`
+    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].exerNum + 1}`
+    console.log(indexCircuit)
+    activeCircuit = indexCircuit
+    console.log(circuitsArr[indexCircuit])
+}
