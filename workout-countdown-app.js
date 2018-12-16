@@ -47,24 +47,23 @@ Circuit.prototype.startCircuit = function () {
         if (timerStarted) {
             timer = startTimer(this.exerciseArray[this.exerCycles].duration, "timer-clock", () => {
 
-                    
                     if (this.exerNum > this.exerCycles) {
                         this.exerCycles++
-                        exerciseNumberEl.textContent = `Exercise number: ${this.exerCycles + 1}`
+                        exerciseNumberEl.textContent = `Exercise number: ${this.exerCycles + 1} of ${this.exerNum + 1}`
                         exerciseTitleEl.textContent = this.exerciseArray[this.exerCycles].name
                         timer.resume()
                         
                     } else if (this.exerNum <= this.exerCycles){
                         this.exerCycles = 0
-                        exerciseNumberEl.textContent = `Exercise number: ${this.exerCycles + 1}`
+                        exerciseNumberEl.textContent = `Exercise number: ${this.exerCycles + 1} of ${this.exerNum + 1}`
                         exerciseTitleEl.textContent = this.exerciseArray[this.exerCycles].name
                         this.circuitCycles++
-                        setNumberEl.textContent = `Set number: ${this.circuitCycles + 1}`
+                        setNumberEl.textContent = `Set number: ${this.circuitCycles + 1} of ${this.setsNum}`
                         console.log(this.circuitCycles)
 
                         if (this.setsNum <= this.circuitCycles) {
                             this.circuitCycles = 0
-                            setNumberEl.textContent = `Set number: ${this.circuitCycles + 1}`
+                            setNumberEl.textContent = `Set number: ${this.circuitCycles + 1} of ${this.setsNum}`
                             timer.stop()
                             console.log('finished')
                             startStopEl.textContent = 'Restart'
