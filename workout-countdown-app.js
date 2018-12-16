@@ -53,6 +53,7 @@ Circuit.prototype.startCircuit = function () {
                         exerciseNumberEl.textContent = `Exercise number: ${this.exerCycles + 1}`
                         exerciseTitleEl.textContent = this.exerciseArray[this.exerCycles].name
                         timer.resume()
+                        
                     } else if (this.exerNum <= this.exerCycles){
                         this.exerCycles = 0
                         exerciseNumberEl.textContent = `Exercise number: ${this.exerCycles + 1}`
