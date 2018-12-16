@@ -15,18 +15,31 @@
     <section id="timer-area">
             <div class="row">
                 <div class="col-12">
-                <h1 id="exercise-title">Press start to begin</h1>
+                <h1 id="exercise-title">First, add a circuit</h1>
                 <h1 id="timer-clock">0:00</h1>
                 <h2 id="exercise-number">Exercise number: 1</h2>
                 <h2 id="set-number">Set number: 1</h2>
-                <button id="start-stop-button" class="btn btn-primary orange">Start</button>
+                <button id="start-stop-button" class="btn btn-primary orange disabled">Start</button>
                 <button id="pause-resume-button" class="btn btn-secondary disabled">Pause</button>
             </div>
             </div>
     </section>
     <div class="row">
         <div class="col-12">
-            <form class="form-group p-20">
+                <form class="form-group p-20">
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Circuit name: <input id="circuit-name" class="form-control" placeholder="Circuit name" type="text"></label>
+                            </div>
+                            <div class="col-6">
+                                <label>Number of sets: <input id="sets-number" class="form-control" placeholder="0" type="number"></label>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" id="add-circuit">Add Circuit</button>
+                            </div>
+                        </div>
+                    </form>
+            <form id="exer-form" class="form-group p-20 hidden">
                 <div class="row">
                     <div class="col-12">
                         <label>Exercise name: <input id="exercise-name" class="form-control" placeholder="Exercise name" type="text"></label>
