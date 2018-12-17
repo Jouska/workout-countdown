@@ -12,3 +12,11 @@ form {
 #timer-clock {
     margin: 50px 0px;
 }
+
+#exer-form {
+
+}
+
+.hidden {
+    display: none;
+}
