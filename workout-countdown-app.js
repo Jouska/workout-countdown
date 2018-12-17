@@ -21,12 +21,10 @@ const setNumberEl = document.querySelector('#set-number')
 let timer
 let timerStarted = false
 let intervalNew
-let circuitsArr = loadCircuits()
+let circuitsArr = []
 let activeCircuit = 0
 
-// Complete updateCircuitArr (at bottom)
-// Continue updating code to include sets/exercise numbers correctly from circuitSelect dropdown
-// Needs to also allow editing of exercises if a circuit is selected
+// Nice! Another run of bug checking, then start to style and clean up presentation and user flow
 
 const Exercise = function (name, type, duration) {
     this.name = name
@@ -34,11 +32,11 @@ const Exercise = function (name, type, duration) {
     this.duration = duration + 1
 }
 
-const Circuit = function (name, setsNum) {
+const Circuit = function (name, setsNum, exerciseArray = [], exerNum = 0) {
     this.name = name
-    this.exerNum
+    this.exerNum = exerNum
     this.setsNum = setsNum
-    this.exerciseArray = []
+    this.exerciseArray = exerciseArray
     this.circuitCycles = 0
     this.exerCycles = 0
     this.id = uuidv4()
@@ -94,8 +92,8 @@ Circuit.prototype.startCircuit = function () {
             timer.stop()
             this.exerCycles = 0
             this.circuitCycles = 0
-            exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].exerNum + 1}`
-            setNumberEl.textContent = `Set number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].setsNum}`
+            renderCurrentSetExerciseNum()
+            
 
             startStopEl.textContent = 'Start'
             pauseResumeEl.classList.add('disabled')
@@ -106,13 +104,31 @@ Circuit.prototype.startCircuit = function () {
 }
 
 // let circuitOne = new Circuit('circuitOne', 3)
+
+loadCircuits()
 appReset()
 populateCircuitSelect()
 updateCircuitArr()
 
 function appReset () {
-    exerciseNumberEl.textContent = `Exercise number: 0 of 0`
-    setNumberEl.textContent = `Set number: 0 of 0`
+    if (circuitsArr.length > 0) {
+        debugger
+        renderCurrentSetExerciseNum()
+    } else {
+        exerciseNumberEl.textContent = `Exercise number: 0 of 0`
+        setNumberEl.textContent = `Set number: 0 of 0`
+    }
+}
+
+function renderCurrentSetExerciseNum () {
+    // debugger
+
+    setNumberEl.textContent = `Set number: ${circuitsArr[activeCircuit].exerCycles + 1} of ${circuitsArr[activeCircuit].setsNum}`
+    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[activeCircuit].exerCycles + 1} of ${parseInt(circuitsArr[activeCircuit].exerNum, 10)}`
+    if (circuitsArr[activeCircuit].exerNum === 0) {
+        
+        exerciseNumberEl.textContent = `Exercise number: 0 of ${parseInt(circuitsArr[activeCircuit].exerNum, 10)}`
+    }
 }
 
 function populateCircuitSelect () {
@@ -124,10 +140,15 @@ function populateCircuitSelect () {
         selectCircuitEl.appendChild(circuitOption)
         
     })
+    if (circuitsArr.length > 0) {
+        exerciseFormEl.classList.remove('hidden')
+        renderCurrentSetExerciseNum()
+    }
 }
 
-function createCircuit (name, sets) {
-    const circuit = new Circuit(name, sets)
+function createCircuit (name, sets, exerciseArray, exerNum) {
+    debugger
+    const circuit = new Circuit(name, sets, exerciseArray, exerNum)
     circuitsArr.unshift(circuit)
 
     saveCircuit(circuitsArr)
@@ -151,11 +172,15 @@ function saveCircuit (circuitArr) {
 
 function loadCircuits () {
     circuitsJSON = localStorage.getItem('circuits')
-
-    try {
-        return circuitsJSON ? JSON.parse(circuitsJSON) : []
-    } catch (e) {
-        return []
+    if (circuitsJSON) {
+        circuitsParsed = JSON.parse(circuitsJSON)
+        console.log(circuitsParsed)
+        circuitsParsed.forEach((circuit) => {
+            const newCircuit = createCircuit(circuit.name, circuit.setsNum, circuit.exerciseArray, circuit.exerNum)
+            console.log(circuitsArr)
+        })
+    } else {
+        circuitsArr = []
     }
 }
 
@@ -195,7 +220,7 @@ function startTimer (seconds, container, oncomplete) {
 }
 
 startStopEl.addEventListener('click', () => {
-    circuitsArr[indexCircuit].startCircuit()
+    circuitsArr[activeCircuit].startCircuit()
 })
 
 pauseResumeEl.addEventListener('click', () => {
@@ -218,8 +243,8 @@ addExerciseBtnEl.addEventListener('click', (e) => {
     let type = exerciseTypeEl.value
     let duration = parseInt(exerciseDurationEl.value, 10)
 
-    circuitsArr[indexCircuit].addExercise(name, type, duration)
-    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].exerNum + 1}`
+    circuitsArr[activeCircuit].addExercise(name, type, duration)
+    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[activeCircuit].exerCycles + 1} of ${circuitsArr[activeCircuit].exerNum + 1}`
 
     exerciseNameEl.value = ''
     exerciseDurationEl.value = ''
@@ -236,17 +261,16 @@ addCircuitBtnEl.addEventListener('click', (e) => {
     let name = circuitNameEl.value
     let setNum = parseInt(circuitSetNumEl.value, 10)
     createCircuit(name, setNum)
-    setNumberEl.textContent = `Set number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${setNum}`
+    setNumberEl.textContent = `Set number: ${circuitsArr[activeCircuit].exerCycles + 1} of ${setNum}`
     
     exerciseTitleEl.textContent = `Now add some exercises!`
 
-    addCircuitBtnEl.textContent = 'Update Circuit'
-
     populateCircuitSelect()
-
+    
     if (circuitsArr.length > 0) {
         exerciseFormEl.classList.remove('hidden')
     }
+
 })
 
 selectCircuitEl.addEventListener('change', (e) => {
@@ -254,12 +278,16 @@ selectCircuitEl.addEventListener('change', (e) => {
 })
 
 function updateCircuitArr () {
-    let indexCircuit = circuitsArr.findIndex((circuit) => {
-        return selectCircuitEl.value === circuit.id
-    })
-    setNumberEl.textContent = `Set number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].setsNum}`
-    exerciseNumberEl.textContent = `Exercise number: ${circuitsArr[indexCircuit].exerCycles + 1} of ${circuitsArr[indexCircuit].exerNum + 1}`
-    console.log(indexCircuit)
-    activeCircuit = indexCircuit
-    console.log(circuitsArr[indexCircuit])
+    if (circuitsArr.length > 0) {
+        let indexCircuit = circuitsArr.findIndex((circuit) => {
+            return selectCircuitEl.value === circuit.id
+        })
+        activeCircuit = indexCircuit
+        renderCurrentSetExerciseNum()
+        console.log(indexCircuit)
+        
+        console.log(circuitsArr[indexCircuit])
+    } else {
+        activeCircuit = 0
+    }
 }
